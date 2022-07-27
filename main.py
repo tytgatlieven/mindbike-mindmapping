@@ -925,30 +925,23 @@ class MindmapApp(FloatLayout):
         #self.startmenu.add_widget()
 
 
-    def load_map(self,filename):
-
-        if filename=="start.mm":
+    def load_map(self,files: list):
+        for file in files:
+            file = os.path.abspath(file)
             try:
-                from os import getcwd
-                from os.path import join
-                Logger.info("open START-map from file: " + filename + "; current WD: " + getcwd() + "; joined: " + join(getcwd(),filename))
-                filename = join(getcwd(),filename)
-            except Exception, e:
-                Logger.error("couldnt resolve start.mm, " + str(e))
-        try:
-            Logger.info("open map from file: " + filename)
-            self.mv.config=self.app.config
-            self.mv2.config=self.app.config
-            print "close map"
-            self.mv.close_map()
-            self.mv.read_map_from_file(filename)
-            Logger.info("map loaded!" +  filename)
-            self.app.config.set('files','filename',filename)
-            self.tabpanel.switch_to(self.mappanel)
-        except Exception, e:
-            Logger.error("oh, loading " + filename + " didn't work...?")
-        self.dismiss_popup()
-        print self.tabpanel
+                Logger.info("open map from file: " + file)
+                self.mv.config=self.app.config
+                self.mv2.config=self.app.config
+                print("close map")
+                self.mv.close_map()
+                self.mv.read_map_from_file(file)
+                Logger.info("map loaded!" +  file)
+                self.app.config.set('files','filename',file)
+                self.tabpanel.switch_to(self.mappanel)
+            except Exception as e:
+                Logger.error("oh, loading " + file + " didn't work...?")
+            self.dismiss_popup()
+            print(self.tabpanel)
 
     def create_new_map(self):
         self.save_map()
@@ -1008,8 +1001,12 @@ class mmviewApp(App):
         global MAX_NODE_WIDTH
         MIN_NODE_WIDTH = int(self.config.get("options","min_node_width"))
         MAX_NODE_WIDTH = int(self.config.get("options","max_node_width"))
-        print "MIN_NODE_WIDTH", MIN_NODE_WIDTH
-        self.mindmapapp.load_map(self.config.get("files","filename"))
+        print("MIN_NODE_WIDTH", MIN_NODE_WIDTH)
+        if hasattr(self.args, 'files'):
+            files = self.args.files
+        else:
+            files = [self.config.get("files","filename")]
+        self.mindmapapp.load_map(files)
         return self.mindmapapp
 
     def on_config_change(self, config, section, key, value):
@@ -1082,4 +1079,7 @@ class mmviewApp(App):
         self.on_pause()
 
 if __name__ == '__main__':
-    mmviewApp().run()
+    import sys
+    from parse_args import parse_args
+    args = parse_args(sys.argv[1:])
+    mmviewApp(args).run()
