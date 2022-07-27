@@ -141,6 +141,12 @@ class Node(Label):
     siblings = []
     VERTICAL_MARGIN = 5
 
+    def __init__(self, *args, fathers_end_pos=None, **kwargs):
+        if fathers_end_pos is not None:
+            self.fathers_end_pos = fathers_end_pos
+        super().__init__(*args, **kwargs)
+
+
     def on_selected(self,instance,value):
         #self.rootwidget.deselect_all()
         if value:
